@@ -1,3 +1,16 @@
+-- Alter Forien keys
+ALTER TABLE Clubs
+  DROP FOREIGN KEY fk_clubs_faculty;
+
+ALTER TABLE Meetings
+  DROP FOREIGN KEY fk_meetings_club;
+
+ALTER TABLE Participation
+  DROP FOREIGN KEY fk_participation_club;
+
+ALTER TABLE Participation
+  DROP FOREIGN KEY fk_participation_student;
+
 DROP TABLE IF EXISTS Participation;
 DROP TABLE IF EXISTS Meetings;
 DROP TABLE IF EXISTS Clubs;

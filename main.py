@@ -330,7 +330,6 @@ class ClubDatabaseCLI:
                 print("Invalid option.")
 
     def main_menu(self):
-        self.setup_database()
 
         while True:
             print("\nClub Database")
@@ -340,7 +339,8 @@ class ClubDatabaseCLI:
             print("4. Delete row")
             print("5. Modify row")
             print("6. Reports")
-            print("7. Exit")
+            print("7. Setup database")
+            print("8. Exit")
 
             choice = input("Choose an option: ").strip()
             if choice == "1":
@@ -356,6 +356,8 @@ class ClubDatabaseCLI:
             elif choice == "6":
                 self.reports_menu()
             elif choice == "7":
+                self.setup_database()
+            elif choice == "8":
                 print("Goodbye.")
                 if self.connection and self.connection.is_connected():
                     self.connection.close()
