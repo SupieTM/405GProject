@@ -16,7 +16,7 @@ class App(tk.Tk):
 
     dataBaseOptions = ["Faculty", "Student",
                        "Clubs", "Meeting", "Participation"]
-    dataBaseManipulationOptions = ["View", "Add", "Delete", "Modify", "Join"]
+    dataBaseManipulationOptions = ["View", "Add", "Delete", "Modify"]
     currentDBSelection = ""
     currentMSelection = ""
 
@@ -71,7 +71,6 @@ class App(tk.Tk):
             "Add": None,
             "Delete": None,
             "Modify": None,
-            "Join": None,
         }
 
         # Editing Tabs
@@ -100,26 +99,26 @@ class App(tk.Tk):
         selectEntry = tk.Entry(self.tabs["View"])
         selectEntry.grid(row=1, column=2, sticky='w')
 
-        whereTitle = tk.Label(self.tabs["View"], text="Where: ")
-        whereTitle.grid(row=2, column=1, padx=10, sticky='w')
-
-        whereEntry = tk.Entry(self.tabs["View"])
-        whereEntry.grid(row=2, column=2, sticky='w')
-
         joinTitle = tk.Label(self.tabs["View"], text="Joined with: ")
-        joinTitle.grid(row=3, column=1, padx=10, sticky='w')
+        joinTitle.grid(row=2, column=1, padx=10, sticky='w')
 
         joinEntry = tk.Entry(self.tabs["View"])
-        joinEntry.grid(row=3, column=2, sticky='w')
+        joinEntry.grid(row=2, column=2, sticky='w')
 
         joinbyTitle = tk.Label(self.tabs["View"], text="on: ")
-        joinbyTitle.grid(row=4, column=1, padx=10, sticky='w')
+        joinbyTitle.grid(row=3, column=1, padx=10, sticky='w')
 
         joinbyEntry = tk.Entry(self.tabs["View"])
-        joinbyEntry.grid(row=4, column=2, sticky='w')
+        joinbyEntry.grid(row=3, column=2, sticky='w')
+
+        whereTitle = tk.Label(self.tabs["View"], text="Where: ")
+        whereTitle.grid(row=4, column=1, padx=10, sticky='w')
+
+        whereEntry = tk.Entry(self.tabs["View"])
+        whereEntry.grid(row=4, column=2, sticky='w')
 
         viewButton = tk.Button(
-            self.tabs["View"], text="Select", command=self.buttonTest)
+            self.tabs["View"], text="Find", command=lambda: self.viewButton(selectEntry.get(), joinEntry.get(), joinbyEntry.get(), whereEntry.get()))
         viewButton.grid(row=5, column=0, columnspan=3, sticky='nsew')
 
         self.tabs["Add"] = tk.Frame(self, bg="lightgreen")
@@ -142,7 +141,7 @@ class App(tk.Tk):
         addEntry.grid(row=1, column=1, sticky='nw')
 
         addButton = tk.Button(
-            self.tabs["Add"], text="Select", command=self.buttonTest)
+            self.tabs["Add"], text="Commit", command=lambda: self.addButton(addEntry.get()))
         addButton.grid(row=2, column=0, columnspan=2, sticky='nsew')
 
         self.tabs["Delete"] = tk.Frame(self, bg="lightgreen")
@@ -151,17 +150,36 @@ class App(tk.Tk):
         self.tabs["Delete"].rowconfigure(0, weight=1)
         self.tabs["Delete"].rowconfigure(1, weight=1)
         self.tabs["Delete"].rowconfigure(2, weight=1)
+        self.tabs["Delete"].rowconfigure(3, weight=1)
+        self.tabs["Delete"].rowconfigure(4, weight=1)
 
         self.tabs["Delete"].columnconfigure(0, weight=1)
         self.tabs["Delete"].columnconfigure(1, weight=1)
-        self.tabs["Delete"].columnconfigure(2, weight=1)
 
         deleteTabTitle = tk.Label(self.tabs["Delete"], text="Delete")
         deleteTabTitle.grid(row=0, column=0, columnspan=3, sticky='n')
 
+        joinDTitle = tk.Label(self.tabs["Delete"], text="Joined with: ")
+        joinDTitle.grid(row=1, column=1, padx=10, sticky='w')
+
+        joinDEntry = tk.Entry(self.tabs["Delete"])
+        joinDEntry.grid(row=1, column=2, sticky='w')
+
+        joinbyDTitle = tk.Label(self.tabs["Delete"], text="on: ")
+        joinbyDTitle.grid(row=2, column=1, padx=10, sticky='w')
+
+        joinbyDEntry = tk.Entry(self.tabs["Delete"])
+        joinbyDEntry.grid(row=2, column=2, sticky='w')
+
+        delLabel = tk.Label(self.tabs["Delete"], text="Drop where: ")
+        delLabel.grid(row=3, column=1, sticky='w')
+
+        delEntry = tk.Entry(self.tabs["Delete"])
+        delEntry.grid(row=3, column=2, sticky='w')
+
         deleteButton = tk.Button(
-            self.tabs["Delete"], text="Select", command=self.buttonTest)
-        deleteButton.grid(row=2, column=2, sticky='nsew')
+            self.tabs["Delete"], text="Commit", command=lambda: self.deleteButton(joinDEntry.get(), joinbyDEntry.get(), delEntry.get()))
+        deleteButton.grid(row=4, column=0, columnspan=3, sticky='nsew')
 
         self.tabs["Modify"] = tk.Frame(self, bg="lightgreen")
         self.tabs["Modify"].grid(row=1, column=0, sticky='nsew')
@@ -169,6 +187,9 @@ class App(tk.Tk):
         self.tabs["Modify"].rowconfigure(0, weight=1)
         self.tabs["Modify"].rowconfigure(1, weight=1)
         self.tabs["Modify"].rowconfigure(2, weight=1)
+        self.tabs["Modify"].rowconfigure(3, weight=1)
+        self.tabs["Modify"].rowconfigure(4, weight=1)
+        self.tabs["Modify"].rowconfigure(5, weight=1)
 
         self.tabs["Modify"].columnconfigure(0, weight=1)
         self.tabs["Modify"].columnconfigure(1, weight=1)
@@ -177,28 +198,33 @@ class App(tk.Tk):
         modifyTabTitle = tk.Label(self.tabs["Modify"], text="Modify")
         modifyTabTitle.grid(row=0, column=0, columnspan=3, sticky='n')
 
-        modifyButton = tk.Button(
-            self.tabs["Modify"], text="Select", command=self.buttonTest)
-        modifyButton.grid(row=2, column=2, sticky='nsew')
+        setLabel = tk.Label(self.tabs["Modify"], text="Set Columns: ")
+        setLabel.grid(row=1, column=1, sticky='w')
 
-        self.tabs["Join"] = tk.Frame(self, bg="lightgreen")
-        self.tabs["Join"].grid(row=1, column=0, sticky='nsew')
+        setEntry = tk.Entry(self.tabs["Modify"])
+        setEntry.grid(row=1, column=2, sticky='w')
 
-        self.tabs["Join"].rowconfigure(0, weight=1)
-        self.tabs["Join"].rowconfigure(1, weight=1)
-        self.tabs["Join"].rowconfigure(2, weight=1)
+        joinMTitle = tk.Label(self.tabs["Modify"], text="Joined with: ")
+        joinMTitle.grid(row=2, column=1, padx=10, sticky='w')
 
-        self.tabs["Join"].columnconfigure(0, weight=1)
-        self.tabs["Join"].columnconfigure(1, weight=1)
-        self.tabs["Join"].columnconfigure(2, weight=1)
+        joinMEntry = tk.Entry(self.tabs["Modify"])
+        joinMEntry.grid(row=2, column=2, sticky='w')
 
-        joinTabTitle = tk.Label(self.tabs["Join"], text="Join")
-        joinTabTitle.grid(row=0, column=0, columnspan=3, sticky='n')
+        joinbyMTitle = tk.Label(self.tabs["Modify"], text="on: ")
+        joinbyMTitle.grid(row=3, column=1, padx=10, sticky='w')
 
-        joinButton = tk.Button(
-            self.tabs["Join"], text="Select", command=self.buttonTest)
-        joinButton.grid(row=2, column=2, sticky='nsew')
+        joinbyMEntry = tk.Entry(self.tabs["Modify"])
+        joinbyMEntry.grid(row=3, column=2, sticky='w')
 
+        whereMLabel = tk.Label(self.tabs["Modify"], text="Where: ")
+        whereMLabel.grid(row=4, column=1, sticky='w')
+
+        whereMEntry = tk.Entry(self.tabs["Modify"])
+        whereMEntry.grid(row=4, column=2, sticky='w')
+
+        modifyButton_T = tk.Button(
+            self.tabs["Modify"], text="Change", command=lambda: self.modifyButton(setEntry.get(), joinMEntry.get(), joinbyMEntry.get(), whereMEntry.get()))
+        modifyButton_T.grid(row=5, column=0, columnspan=3, sticky='nsew')
         self.tabs["View"].tkraise()
 
         # display text
@@ -207,9 +233,17 @@ class App(tk.Tk):
 
         testText = "hello\nThisistesttext"
 
-        self.outputText = tk.Text(self.displayTextFigure)
+        self.outputText = tk.Text(self.displayTextFigure, state="disabled")
         self.outputText.insert('1.0', testText)
         self.outputText.pack()
+
+        self.changeOutputText(testText)
+
+    def changeOutputText(self, text):
+        self.outputText.config(state="normal")
+        self.outputText.delete('1.0', 'end')
+        self.outputText.insert('1.0', text)
+        self.outputText.config(state="disabled")
 
     def changeDatabase(self, event):
         self.currentDBSelection = event.widget.get()
@@ -219,13 +253,25 @@ class App(tk.Tk):
         self.currentMSelection = event.widget.get()
         self.tabs[self.currentMSelection].tkraise()
 
-    def changeCheckBoxes(DBE, MS):
-        print(DBE, MS)
+    def viewButton(self, col, join, on, where):
+        print(F"col: {col}, join: {join}, on: {on}, where: {where}")
+        pass
 
-    def buttonTest(self):
-        print("click")
+    def addButton(self, insertText):
+        print(insertText)
+
+    def deleteButton(self, join, on, where):
+        print(F"join: {join}, on: {on}, where: {where}")
+        pass
+
+    def modifyButton(self, col, join, on, where):
+        print(F"col: {col}, join: {join}, on: {on}, where: {where}")
+        pass
+
+    def buttonTest():
+        pass
 
 
 if __name__ == "__main__":
-    app = App()
+    app=App()
     app.mainloop()
