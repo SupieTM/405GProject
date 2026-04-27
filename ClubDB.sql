@@ -57,3 +57,34 @@ CREATE TABLE PARTICIPATION (
     CONSTRAINT STUDENT_FK FOREIGN KEY (Student_ID) REFERENCES STUDENT(Student_ID),
     CONSTRAINT CLUBS_FK FOREIGN KEY (Club_Name) REFERENCES CLUBS(Club_Name)
 );
+
+-- Insert sample data
+INSERT INTO FACULTY (Faculty_Name) VALUES
+('Mr. Jones'),
+('Ms. Smith'),
+('Dr. Brown');
+
+INSERT INTO STUDENT(Student_Name) VALUES
+('James Parker'),
+('Ramiru Abernathy'),
+('Parker Jenkins'),
+('Jackie Lin');
+
+INSERT INTO CLUBS(Club_Name, Faculty_ID, Annual_Expenses, Annual_Budget, Curr_Year) VALUES
+('Chess Club', 1, 500.00, 1000.00, 2026),
+('Chess Club', 1, 800.00, 2000.00, 2025),
+('Robotics Club', 2, 1500.00, 2000.00, 2026),
+('Drama Club', 3, 800.00, 1200.00, 2026);
+
+INSERT INTO MEETINGS(Club_Name, Meeting_Date, Meeting_Time, Meeting_Location, MEETING_DESCRIPTION) VALUES
+('Chess Club', '2026-09-15', '18:00:00', 'Room 101', 'Weekly chess practice and strategy discussion.'),
+('Chess Club', '2026-09-16', '14:00:00', 'William T Young Library', 'State tournament.'),
+('Robotics Club', '2026-09-20', '17:00:00', 'Lab 202', 'Introduction to robotics and project planning.'),
+('Drama Club', '2026-09-25', '19:00:00', 'Auditorium', 'Rehearsal for the upcoming school play.');
+
+INSERT INTO PARTICIPATION(Student_ID, Club_Name) VALUES
+(1, 'Chess Club'),
+(2, 'Chess Club'),
+(2, 'Robotics Club'),
+(3, 'Robotics Club'),
+(4, 'Drama Club');
