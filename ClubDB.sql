@@ -9,24 +9,27 @@ DROP TABLE IF EXISTS PARTICIPATION;
 CREATE TABLE FACULTY (
     Faculty_ID INT PRIMARY KEY AUTO_INCREMENT,
     Faculty_Name VARCHAR(70) NOT NULL
-)
+);
 
 -- Create Student Table
 CREATE TABLE STUDENT (
     Student_ID INT PRIMARY KEY AUTO_INCREMENT,
     Student_Name VARCHAR(70) NOT NULL
-)
+);
 
 -- Create Clubs Table
 CREATE TABLE CLUBS (
-    Club_Name VARCHAR(70) PRIMARY KEY,
+    Club_Name VARCHAR(70) ,
     Faculty_ID INT,
     Annual_Expenses DECIMAL(10, 2),
     Annual_Budget DECIMAL(10, 2),
+    Curr_Year YEAR,
+
+    PRIMARY KEY (Club_Name, Curr_Year),
 
     -- Create foreign key constraint on faculty_id
     CONSTRAINT FALCULTY_FK FOREIGN KEY (Faculty_ID) REFERENCES FACULTY(Faculty_ID)
-)
+);
 
 -- Create Meetings Table
 CREATE TABLE MEETINGS (
@@ -40,7 +43,7 @@ CREATE TABLE MEETINGS (
     -- Create foreign key constraint on club_name
     CONSTRAINT CLUBS_FK FOREIGN KEY (Club_Name) REFERENCES CLUBS(Club_Name)
 
-)
+);
 
 -- Create the student club participation table
 CREATE TABLE PARTICIPATION (
@@ -53,4 +56,4 @@ CREATE TABLE PARTICIPATION (
     -- Create foreign key constraints on Student_ID and Club_Name
     CONSTRAINT STUDENT_FK FOREIGN KEY (Student_ID) REFERENCES STUDENT(Student_ID),
     CONSTRAINT CLUBS_FK FOREIGN KEY (Club_Name) REFERENCES CLUBS(Club_Name)
-)
+);
