@@ -1,90 +1,93 @@
--- Drop old tables
-DROP TABLE IF EXISTS FACULTY;
-DROP TABLE IF EXISTS STUDENT;
-DROP TABLE IF EXISTS CLUBS;
-DROP TABLE IF EXISTS MEETINGS;
-DROP TABLE IF EXISTS PARTICIPATION;
+DROP TABLE IF EXISTS Participation;
+DROP TABLE IF EXISTS Meetings;
+DROP TABLE IF EXISTS Clubs;
+DROP TABLE IF EXISTS Student;
+DROP TABLE IF EXISTS Faculty;
 
--- Create Faculty Table
-CREATE TABLE FACULTY (
-    Faculty_ID INT PRIMARY KEY AUTO_INCREMENT,
-    Faculty_Name VARCHAR(70) NOT NULL
+CREATE TABLE Faculty (
+    Faculty_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Faculty_Name VARCHAR(70) NOT NULL UNIQUE
 );
 
--- Create Student Table
-CREATE TABLE STUDENT (
-    Student_ID INT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE Student (
+    Student_ID INT AUTO_INCREMENT PRIMARY KEY,
     Student_Name VARCHAR(70) NOT NULL
 );
 
--- Create Clubs Table
-CREATE TABLE CLUBS (
-    Club_Name VARCHAR(70) ,
-    Faculty_ID INT,
-    Annual_Expenses DECIMAL(10, 2),
-    Annual_Budget DECIMAL(10, 2),
-    Curr_Year YEAR,
-
+CREATE TABLE Clubs (
+    Club_Name VARCHAR(70) NOT NULL,
+    Curr_Year YEAR NOT NULL,
+    Faculty_ID INT NOT NULL,
+    Annual_Expenses DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    Annual_Budget DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     PRIMARY KEY (Club_Name, Curr_Year),
-
-    -- Create foreign key constraint on faculty_id
-    CONSTRAINT FALCULTY_FK FOREIGN KEY (Faculty_ID) REFERENCES FACULTY(Faculty_ID)
+    CONSTRAINT fk_clubs_faculty
+        FOREIGN KEY (Faculty_ID) REFERENCES Faculty(Faculty_ID)
+        ON UPDATE CASCADE
 );
 
--- Create Meetings Table
-CREATE TABLE MEETINGS (
-    MEETING_ID INT PRIMARY KEY AUTO_INCREMENT,
-    Club_Name VARCHAR(70),
-    Meeting_Date DATE,
-    Meeting_Time TIME,
-    Meeting_Location VARCHAR(100),
-    MEETING_DESCRIPTION VARCHAR(255),
-
-    -- Create foreign key constraint on club_name
-    CONSTRAINT CLUBS_FK FOREIGN KEY (Club_Name) REFERENCES CLUBS(Club_Name)
-
+CREATE TABLE Meetings (
+    Meeting_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Club_Name VARCHAR(70) NOT NULL,
+    Curr_Year YEAR NOT NULL,
+    Meeting_Date DATE NOT NULL,
+    Meeting_Time TIME NOT NULL,
+    Meeting_Location VARCHAR(100) NOT NULL,
+    Meeting_Description VARCHAR(255),
+    CONSTRAINT fk_meetings_club
+        FOREIGN KEY (Club_Name, Curr_Year) REFERENCES Clubs(Club_Name, Curr_Year)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT uq_room_timeslot
+        UNIQUE (Meeting_Date, Meeting_Time, Meeting_Location),
+    CONSTRAINT uq_club_timeslot
+        UNIQUE (Club_Name, Curr_Year, Meeting_Date, Meeting_Time)
 );
 
--- Create the student club participation table
-CREATE TABLE PARTICIPATION (
+CREATE TABLE Participation (
     Student_ID INT NOT NULL,
     Club_Name VARCHAR(70) NOT NULL,
-
-    -- Composite Primary key on Student_ID and Club_Name
-    PRIMARY KEY (Student_ID, Club_Name),
-
-    -- Create foreign key constraints on Student_ID and Club_Name
-    CONSTRAINT STUDENT_FK FOREIGN KEY (Student_ID) REFERENCES STUDENT(Student_ID),
-    CONSTRAINT CLUBS_FK FOREIGN KEY (Club_Name) REFERENCES CLUBS(Club_Name)
+    Curr_Year YEAR NOT NULL,
+    PRIMARY KEY (Student_ID, Club_Name, Curr_Year),
+    CONSTRAINT fk_participation_student
+        FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_participation_club
+        FOREIGN KEY (Club_Name, Curr_Year) REFERENCES Clubs(Club_Name, Curr_Year)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Insert sample data
-INSERT INTO FACULTY (Faculty_Name) VALUES
-('Mr. Jones'),
-('Ms. Smith'),
-('Dr. Brown');
+INSERT INTO Faculty (Faculty_Name) VALUES
+('Ms. Carter'),
+('Mr. Nguyen'),
+('Dr. Patel');
 
-INSERT INTO STUDENT(Student_Name) VALUES
+INSERT INTO Student (Student_Name) VALUES
 ('James Parker'),
 ('Ramiru Abernathy'),
 ('Parker Jenkins'),
-('Jackie Lin');
+('Jacky Lin'),
+('Aiden Smith'),
+('Bella Johnson'),
+('Carlos Garcia'),
+('Diana Lee'),
+('Ethan Brown');
 
-INSERT INTO CLUBS(Club_Name, Faculty_ID, Annual_Expenses, Annual_Budget, Curr_Year) VALUES
-('Chess Club', 1, 500.00, 1000.00, 2026),
-('Chess Club', 1, 800.00, 2000.00, 2025),
-('Robotics Club', 2, 1500.00, 2000.00, 2026),
-('Drama Club', 3, 800.00, 1200.00, 2026);
+INSERT INTO Clubs (Club_Name, Curr_Year, Faculty_ID, Annual_Expenses, Annual_Budget) VALUES
+('Band', 2026, 1, 1200.00, 3000.00),
+('MathCounts', 2026, 2, 450.00, 1500.00),
+('Speech', 2026, 3, 700.00, 2000.00),
+('Choir', 2026, 1, 300.00, 1200.00);
 
-INSERT INTO MEETINGS(Club_Name, Meeting_Date, Meeting_Time, Meeting_Location, MEETING_DESCRIPTION) VALUES
-('Chess Club', '2026-09-15', '18:00:00', 'Room 101', 'Weekly chess practice and strategy discussion.'),
-('Chess Club', '2026-09-16', '14:00:00', 'William T Young Library', 'State tournament.'),
-('Robotics Club', '2026-09-20', '17:00:00', 'Lab 202', 'Introduction to robotics and project planning.'),
-('Drama Club', '2026-09-25', '19:00:00', 'Auditorium', 'Rehearsal for the upcoming school play.');
+INSERT INTO Meetings (Club_Name, Curr_Year, Meeting_Date, Meeting_Time, Meeting_Location, Meeting_Description) VALUES
+('Band', 2026, '2026-04-28', '15:30:00', 'Music Room', 'Weekly rehearsal'),
+('MathCounts', 2026, '2026-04-28', '15:30:00', 'Room 101', 'Competition practice'),
+('Speech', 2026, '2026-04-29', '16:00:00', 'Room 202', 'Speech practice'),
+('Choir', 2026, '2026-04-30', '15:30:00', 'Music Room', 'Choir rehearsal');
 
-INSERT INTO PARTICIPATION(Student_ID, Club_Name) VALUES
-(1, 'Chess Club'),
-(2, 'Chess Club'),
-(2, 'Robotics Club'),
-(3, 'Robotics Club'),
-(4, 'Drama Club');
+INSERT INTO Participation (Student_ID, Club_Name, Curr_Year) VALUES
+(1, 'Band', 2026),
+(2, 'Band', 2026),
+(2, 'MathCounts', 2026),
+(3, 'MathCounts', 2026),
+(4, 'Speech', 2026),
+(5, 'Choir', 2026);

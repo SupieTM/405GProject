@@ -1,277 +1,369 @@
 import mysql.connector
-import tkinter as tk
-from tkinter import ttk
+from mysql.connector import Error
 
-# This is for the information for the dbConnection
 import loginInfo as LI
 from databaseInfo import DBHM
 
-
-class App(tk.Tk):
-    # dbConnection = mysql.connector.connect(
-    #     host=LI.host,
-    #     user=LI.user,
-    #     password=LI.password,
-    #     database=LI.database)
-
-    dataBaseOptions = ["Faculty", "Student",
-                       "Clubs", "Meeting", "Participation"]
-    dataBaseManipulationOptions = ["View", "Add", "Delete", "Modify"]
-    currentDBSelection = ""
-    currentMSelection = ""
-
+class ClubDatabaseCLI:
     def __init__(self):
-        self.currentSelection = self.dataBaseOptions[0]
-        super().__init__()
-
-        # Configure the Windows
-        self.title("Club database navigator")
-        self.geometry("850x500+50+50")
-        self.configure(background="lightgrey")
-
-        # configure the grid
-        self.rowconfigure(0, weight=1)
-        self.rowconfigure(1, weight=3)
-
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=3)
-
-        # Label
-        # title_label = tk.Label(self, text="Club Navigator")
-        # title_label.grid(row=0, column=1, columnspan=2, sticky='n')
-
-        # comboBoxs
-        comboBoxFrame = tk.Frame(self, bg="lightblue")
-        comboBoxFrame.grid(row=0, column=0, sticky=tk.NSEW)
-
-        comboBoxFrame.rowconfigure(0, weight=1)
-        comboBoxFrame.rowconfigure(1, weight=1)
-        comboBoxFrame.rowconfigure(2, weight=1)
-        comboBoxFrame.columnconfigure(0, weight=1)
-
-        selectionLabel = tk.Label(
-            comboBoxFrame, text="Choose table and operation")
-        selectionLabel.grid(row=0, column=0, sticky='s')
-
-        comboBoxDB = ttk.Combobox(comboBoxFrame, values=self.dataBaseOptions)
-        comboBoxDB.configure(justify="center", width=20)
-        comboBoxDB.set("Select Database")
-        comboBoxDB.bind("<<ComboboxSelected>>", self.changeDatabase)
-        comboBoxDB.grid(row=1, column=0, padx=10)
-
-        comboBoxM = ttk.Combobox(
-            comboBoxFrame, values=self.dataBaseManipulationOptions)
-        comboBoxM.configure(justify="center", width=20)
-        comboBoxM.set("Select Operation")
-        comboBoxM.bind("<<ComboboxSelected>>", self.changeManipulationOption)
-        comboBoxM.grid(row=2, column=0, padx=10, sticky='n')
-
-        self.tabs = {
-            "View": None,
-            "Add": None,
-            "Delete": None,
-            "Modify": None,
-        }
-
-        # Editing Tabs
-
-        # view
-        self.tabs["View"] = tk.Frame(self, bg="lightgreen")
-        self.tabs["View"].grid(row=1, column=0, sticky='nsew')
-
-        self.tabs["View"].rowconfigure(0, weight=1)
-        self.tabs["View"].rowconfigure(1, weight=1)
-        self.tabs["View"].rowconfigure(2, weight=1)
-        self.tabs["View"].rowconfigure(3, weight=1)
-        self.tabs["View"].rowconfigure(4, weight=1)
-        self.tabs["View"].rowconfigure(5, weight=1)
-
-        self.tabs["View"].columnconfigure(0, weight=1)
-        self.tabs["View"].columnconfigure(1, weight=1)
-        self.tabs["View"].columnconfigure(2, weight=1)
-
-        viewTabTitle = tk.Label(self.tabs["View"], text="View")
-        viewTabTitle.grid(row=0, column=1, columnspan=3, sticky='n')
-
-        seletectTitle = tk.Label(self.tabs["View"], text="Select Columns: ")
-        seletectTitle.grid(row=1, column=1, padx=10, sticky='w')
-
-        selectEntry = tk.Entry(self.tabs["View"])
-        selectEntry.grid(row=1, column=2, sticky='w')
-
-        joinTitle = tk.Label(self.tabs["View"], text="Joined with: ")
-        joinTitle.grid(row=2, column=1, padx=10, sticky='w')
-
-        joinEntry = tk.Entry(self.tabs["View"])
-        joinEntry.grid(row=2, column=2, sticky='w')
-
-        joinbyTitle = tk.Label(self.tabs["View"], text="on: ")
-        joinbyTitle.grid(row=3, column=1, padx=10, sticky='w')
-
-        joinbyEntry = tk.Entry(self.tabs["View"])
-        joinbyEntry.grid(row=3, column=2, sticky='w')
-
-        whereTitle = tk.Label(self.tabs["View"], text="Where: ")
-        whereTitle.grid(row=4, column=1, padx=10, sticky='w')
-
-        whereEntry = tk.Entry(self.tabs["View"])
-        whereEntry.grid(row=4, column=2, sticky='w')
-
-        viewButton = tk.Button(
-            self.tabs["View"], text="Find", command=lambda: self.viewButton(selectEntry.get(), joinEntry.get(), joinbyEntry.get(), whereEntry.get()))
-        viewButton.grid(row=5, column=0, columnspan=3, sticky='nsew')
-
-        self.tabs["Add"] = tk.Frame(self, bg="lightgreen")
-        self.tabs["Add"].grid(row=1, column=0, sticky='nsew')
-
-        self.tabs["Add"].rowconfigure(0, weight=1)
-        self.tabs["Add"].rowconfigure(1, weight=1)
-        self.tabs["Add"].rowconfigure(2, weight=1)
-
-        self.tabs["Add"].columnconfigure(0, weight=1)
-        self.tabs["Add"].columnconfigure(1, weight=1)
-
-        addTabTitle = tk.Label(self.tabs["Add"], text="Add")
-        addTabTitle.grid(row=0, column=0, columnspan=3, sticky='n')
-
-        addLabel = tk.Label(self.tabs["Add"], text="Insert")
-        addLabel.grid(row=1, column=0, sticky='nw')
-
-        addEntry = tk.Entry(self.tabs["Add"])
-        addEntry.grid(row=1, column=1, sticky='nw')
-
-        addButton = tk.Button(
-            self.tabs["Add"], text="Commit", command=lambda: self.addButton(addEntry.get()))
-        addButton.grid(row=2, column=0, columnspan=2, sticky='nsew')
-
-        self.tabs["Delete"] = tk.Frame(self, bg="lightgreen")
-        self.tabs["Delete"].grid(row=1, column=0, sticky='nsew')
-
-        self.tabs["Delete"].rowconfigure(0, weight=1)
-        self.tabs["Delete"].rowconfigure(1, weight=1)
-        self.tabs["Delete"].rowconfigure(2, weight=1)
-        self.tabs["Delete"].rowconfigure(3, weight=1)
-        self.tabs["Delete"].rowconfigure(4, weight=1)
-
-        self.tabs["Delete"].columnconfigure(0, weight=1)
-        self.tabs["Delete"].columnconfigure(1, weight=1)
-
-        deleteTabTitle = tk.Label(self.tabs["Delete"], text="Delete")
-        deleteTabTitle.grid(row=0, column=0, columnspan=3, sticky='n')
-
-        joinDTitle = tk.Label(self.tabs["Delete"], text="Joined with: ")
-        joinDTitle.grid(row=1, column=1, padx=10, sticky='w')
-
-        joinDEntry = tk.Entry(self.tabs["Delete"])
-        joinDEntry.grid(row=1, column=2, sticky='w')
-
-        joinbyDTitle = tk.Label(self.tabs["Delete"], text="on: ")
-        joinbyDTitle.grid(row=2, column=1, padx=10, sticky='w')
-
-        joinbyDEntry = tk.Entry(self.tabs["Delete"])
-        joinbyDEntry.grid(row=2, column=2, sticky='w')
-
-        delLabel = tk.Label(self.tabs["Delete"], text="Drop where: ")
-        delLabel.grid(row=3, column=1, sticky='w')
-
-        delEntry = tk.Entry(self.tabs["Delete"])
-        delEntry.grid(row=3, column=2, sticky='w')
-
-        deleteButton = tk.Button(
-            self.tabs["Delete"], text="Commit", command=lambda: self.deleteButton(joinDEntry.get(), joinbyDEntry.get(), delEntry.get()))
-        deleteButton.grid(row=4, column=0, columnspan=3, sticky='nsew')
-
-        self.tabs["Modify"] = tk.Frame(self, bg="lightgreen")
-        self.tabs["Modify"].grid(row=1, column=0, sticky='nsew')
-
-        self.tabs["Modify"].rowconfigure(0, weight=1)
-        self.tabs["Modify"].rowconfigure(1, weight=1)
-        self.tabs["Modify"].rowconfigure(2, weight=1)
-        self.tabs["Modify"].rowconfigure(3, weight=1)
-        self.tabs["Modify"].rowconfigure(4, weight=1)
-        self.tabs["Modify"].rowconfigure(5, weight=1)
-
-        self.tabs["Modify"].columnconfigure(0, weight=1)
-        self.tabs["Modify"].columnconfigure(1, weight=1)
-        self.tabs["Modify"].columnconfigure(2, weight=1)
-
-        modifyTabTitle = tk.Label(self.tabs["Modify"], text="Modify")
-        modifyTabTitle.grid(row=0, column=0, columnspan=3, sticky='n')
-
-        setLabel = tk.Label(self.tabs["Modify"], text="Set Columns: ")
-        setLabel.grid(row=1, column=1, sticky='w')
-
-        setEntry = tk.Entry(self.tabs["Modify"])
-        setEntry.grid(row=1, column=2, sticky='w')
-
-        joinMTitle = tk.Label(self.tabs["Modify"], text="Joined with: ")
-        joinMTitle.grid(row=2, column=1, padx=10, sticky='w')
-
-        joinMEntry = tk.Entry(self.tabs["Modify"])
-        joinMEntry.grid(row=2, column=2, sticky='w')
-
-        joinbyMTitle = tk.Label(self.tabs["Modify"], text="on: ")
-        joinbyMTitle.grid(row=3, column=1, padx=10, sticky='w')
-
-        joinbyMEntry = tk.Entry(self.tabs["Modify"])
-        joinbyMEntry.grid(row=3, column=2, sticky='w')
-
-        whereMLabel = tk.Label(self.tabs["Modify"], text="Where: ")
-        whereMLabel.grid(row=4, column=1, sticky='w')
-
-        whereMEntry = tk.Entry(self.tabs["Modify"])
-        whereMEntry.grid(row=4, column=2, sticky='w')
-
-        modifyButton_T = tk.Button(
-            self.tabs["Modify"], text="Change", command=lambda: self.modifyButton(setEntry.get(), joinMEntry.get(), joinbyMEntry.get(), whereMEntry.get()))
-        modifyButton_T.grid(row=5, column=0, columnspan=3, sticky='nsew')
-        self.tabs["View"].tkraise()
-
-        # display text
-        self.displayTextFigure = tk.Frame(self, bg="white")
-        self.displayTextFigure.grid(row=0, column=1, rowspan=2, sticky="nsew")
-
-        testText = "hello\nThisistesttext"
-
-        self.outputText = tk.Text(self.displayTextFigure, state="disabled")
-        self.outputText.insert('1.0', testText)
-        self.outputText.pack()
-
-        self.changeOutputText(testText)
-
-    def changeOutputText(self, text):
-        self.outputText.config(state="normal")
-        self.outputText.delete('1.0', 'end')
-        self.outputText.insert('1.0', text)
-        self.outputText.config(state="disabled")
-
-    def changeDatabase(self, event):
-        self.currentDBSelection = event.widget.get()
-        print(self.currentDBSelection)
-
-    def changeManipulationOption(self, event):
-        self.currentMSelection = event.widget.get()
-        self.tabs[self.currentMSelection].tkraise()
-
-    def viewButton(self, col, join, on, where):
-        print(F"col: {col}, join: {join}, on: {on}, where: {where}")
-        pass
-
-    def addButton(self, insertText):
-        print(insertText)
-
-    def deleteButton(self, join, on, where):
-        print(F"join: {join}, on: {on}, where: {where}")
-        pass
-
-    def modifyButton(self, col, join, on, where):
-        print(F"col: {col}, join: {join}, on: {on}, where: {where}")
-        pass
-
-    def buttonTest():
-        pass
+        self.connection = None
+        self.connect_to_database()
+    
+    def setup_database(self):
+        connection = mysql.connector.connect(
+            host=LI.host,
+            user=LI.user,
+            password=LI.password
+        )
+        cursor = connection.cursor()
+
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {LI.database}")
+        cursor.execute(f"USE {LI.database}")
+
+        with open("ClubDB.sql", "r") as file:
+            sql_script = file.read()
+        
+        commands = sql_script.split(";")
+
+        for command in commands:
+            command = command.strip()
+            if command:
+                try:
+                    print("Running:", command[:50])
+                    cursor.execute(command)
+                except Exception as e:
+                    print("Error:", e)
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        print(f"Your {LI.database} database is ready!")
+
+    def connect_to_database(self):
+        try:
+            self.connection = mysql.connector.connect(
+                host=LI.host,
+                user=LI.user,
+                password=LI.password,
+                database=LI.database
+            )
+            print("Connected to database successfully.\n")
+        except Error as err:
+            print(f"Database connection error: {err}")
+            raise SystemExit(1)
+
+    def run_query(self, sql, params=None, fetch=False):
+        if not self.connection or not self.connection.is_connected():
+            self.connect_to_database()
+
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(sql, params or ())
+            if fetch:
+                rows = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+                return columns, rows
+
+            self.connection.commit()
+            return cursor.rowcount
+        except Error as err:
+            self.connection.rollback()
+            print(f"SQL Error: {err}")
+            return None
+        finally:
+            cursor.close()
+
+    def print_rows(self, title, columns, rows):
+        print("\n" + "=" * 80)
+        print(title)
+        print("=" * 80)
+
+        if not rows:
+            print("No rows found.\n")
+            return
+
+        widths = [len(str(col)) for col in columns]
+        for row in rows:
+            for i, value in enumerate(row):
+                widths[i] = max(widths[i], len(str(value)))
+
+        header = " | ".join(str(columns[i]).ljust(widths[i]) for i in range(len(columns)))
+        divider = "-+-".join("-" * width for width in widths)
+        print(header)
+        print(divider)
+
+        for row in rows:
+            print(" | ".join(str(row[i]).ljust(widths[i]) for i in range(len(row))))
+        print()
+
+    def choose_table(self):
+        tables = list(DBHM.keys())
+        print("\nTables:")
+        for i, table in enumerate(tables, start=1):
+            print(f"{i}. {table}")
+
+        choice = input("Choose a table number: ").strip()
+        if not choice.isdigit() or not (1 <= int(choice) <= len(tables)):
+            print("Invalid table choice.")
+            return None
+        return tables[int(choice) - 1]
+
+    def view_table(self):
+        table = self.choose_table()
+        if not table:
+            return
+
+        columns = input("Columns to view (* for all): ").strip() or "*"
+        where = input("Optional WHERE condition, without the word WHERE: ").strip()
+
+        sql = f"SELECT {columns} FROM {table}"
+        if where:
+            sql += f" WHERE {where}"
+
+        result = self.run_query(sql, fetch=True)
+        if result:
+            cols, rows = result
+            self.print_rows(table, cols, rows)
+
+    def view_all_tables(self):
+        for table in DBHM.keys():
+            result = self.run_query(f"SELECT * FROM {table}", fetch=True)
+            if result:
+                cols, rows = result
+                self.print_rows(table, cols, rows)
+
+    def add_row(self):
+        table = self.choose_table()
+        if not table:
+            return
+
+        print(f"\nAdding row to {table}")
+        print("Leave auto-increment IDs blank if you want MySQL to create them.")
+
+        columns = []
+        values = []
+        for column in DBHM[table]:
+            value = input(f"{column}: ").strip()
+            if value != "":
+                columns.append(column)
+                values.append(value)
+
+        if not columns:
+            print("No values entered. Insert canceled.")
+            return
+
+        placeholders = ", ".join(["%s"] * len(values))
+        sql = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({placeholders})"
+        count = self.run_query(sql, values)
+        if count is not None:
+            print(f"Inserted {count} row into {table}.\n")
+
+    def delete_row(self):
+        table = self.choose_table()
+        if not table:
+            return
+
+        where = input("WHERE condition, without the word WHERE: ").strip()
+        if not where:
+            print("Delete canceled. A WHERE condition is required.")
+            return
+
+        confirm = input(f"Delete from {table} where {where}? Type YES to confirm: ").strip()
+        if confirm != "YES":
+            print("Delete canceled.")
+            return
+
+        count = self.run_query(f"DELETE FROM {table} WHERE {where}")
+        if count is not None:
+            print(f"Deleted {count} row(s) from {table}.\n")
+
+    def modify_row(self):
+        table = self.choose_table()
+        if not table:
+            return
+
+        print("Example SET value: Annual_Budget = 3500.00")
+        set_text = input("SET value, without the word SET: ").strip()
+        where = input("WHERE condition, without the word WHERE: ").strip()
+
+        if not set_text or not where:
+            print("Update canceled. Both SET and WHERE are required.")
+            return
+
+        count = self.run_query(f"UPDATE {table} SET {set_text} WHERE {where}")
+        if count is not None:
+            print(f"Updated {count} row(s) in {table}.\n")
+
+    def report_students_in_club(self):
+        club = input("Club name: ").strip()
+        year = input("Year: ").strip()
+        sql = """
+            SELECT s.Student_ID, s.Student_Name
+            FROM Student s
+            JOIN Participation p ON s.Student_ID = p.Student_ID
+            WHERE p.Club_Name = %s AND p.Curr_Year = %s
+            ORDER BY s.Student_Name
+        """
+        self.show_report("Students in Club", sql, (club, year))
+
+    def report_clubs_advisors(self):
+        year = input("Year: ").strip()
+        sql = """
+            SELECT c.Club_Name, c.Curr_Year, f.Faculty_Name
+            FROM Clubs c
+            JOIN Faculty f ON c.Faculty_ID = f.Faculty_ID
+            WHERE c.Curr_Year = %s
+            ORDER BY c.Club_Name
+        """
+        self.show_report("Clubs and Advisors", sql, (year,))
+
+    def report_meetings_for_club(self):
+        club = input("Club name: ").strip()
+        year = input("Year: ").strip()
+        sql = """
+            SELECT Meeting_Date, Meeting_Time, Meeting_Location, Meeting_Description
+            FROM Meetings
+            WHERE Club_Name = %s AND Curr_Year = %s
+            ORDER BY Meeting_Date, Meeting_Time
+        """
+        self.show_report("Meetings for Club", sql, (club, year))
+
+    def report_remaining_budget(self):
+        club = input("Club name: ").strip()
+        year = input("Year: ").strip()
+        sql = """
+            SELECT Club_Name, Curr_Year, Annual_Budget, Annual_Expenses,
+                   Annual_Budget - Annual_Expenses AS Remaining_Budget
+            FROM Clubs
+            WHERE Club_Name = %s AND Curr_Year = %s
+        """
+        self.show_report("Remaining Budget", sql, (club, year))
+
+    def report_total_budget(self):
+        year = input("Year: ").strip()
+        sql = """
+            SELECT Curr_Year, SUM(Annual_Budget) AS Total_Budget
+            FROM Clubs
+            WHERE Curr_Year = %s
+            GROUP BY Curr_Year
+        """
+        self.show_report("Total Budget", sql, (year,))
+
+    def report_faculty_clubs(self):
+        faculty_id = input("Faculty ID: ").strip()
+        year = input("Year: ").strip()
+        sql = """
+            SELECT f.Faculty_Name, c.Club_Name, c.Curr_Year
+            FROM Faculty f
+            JOIN Clubs c ON f.Faculty_ID = c.Faculty_ID
+            WHERE f.Faculty_ID = %s AND c.Curr_Year = %s
+            ORDER BY c.Club_Name
+        """
+        self.show_report("Clubs Advised by Faculty", sql, (faculty_id, year))
+
+    def report_student_clubs(self):
+        student_id = input("Student ID: ").strip()
+        year = input("Year: ").strip()
+        sql = """
+            SELECT s.Student_Name, p.Club_Name, p.Curr_Year
+            FROM Student s
+            JOIN Participation p ON s.Student_ID = p.Student_ID
+            WHERE s.Student_ID = %s AND p.Curr_Year = %s
+            ORDER BY p.Club_Name
+        """
+        self.show_report("Student Clubs", sql, (student_id, year))
+
+    def report_student_events_on_date(self):
+        student_id = input("Student ID: ").strip()
+        date = input("Date YYYY-MM-DD: ").strip()
+        sql = """
+            SELECT p.Club_Name, m.Meeting_Date, m.Meeting_Time,
+                   m.Meeting_Location, m.Meeting_Description
+            FROM Participation p
+            JOIN Meetings m
+              ON p.Club_Name = m.Club_Name AND p.Curr_Year = m.Curr_Year
+            WHERE p.Student_ID = %s AND m.Meeting_Date = %s
+            ORDER BY m.Meeting_Time
+        """
+        self.show_report("Student Events on Date", sql, (student_id, date))
+
+    def show_report(self, title, sql, params):
+        result = self.run_query(sql, params, fetch=True)
+        if result:
+            cols, rows = result
+            self.print_rows(title, cols, rows)
+
+    def reports_menu(self):
+        while True:
+            print("\nReports")
+            print("1. View all students in a club for a year")
+            print("2. View all clubs and faculty advisors for a year")
+            print("3. View all meetings/events for a club for a year")
+            print("4. Report total expenses and remaining budget for a club/year")
+            print("5. Report total budget of all clubs for a year")
+            print("6. List all clubs advised by a faculty member")
+            print("7. List all clubs a student belongs to")
+            print("8. View all club meetings/events a student should attend on a date")
+            print("9. Back")
+
+            choice = input("Choose an option: ").strip()
+            if choice == "1":
+                self.report_students_in_club()
+            elif choice == "2":
+                self.report_clubs_advisors()
+            elif choice == "3":
+                self.report_meetings_for_club()
+            elif choice == "4":
+                self.report_remaining_budget()
+            elif choice == "5":
+                self.report_total_budget()
+            elif choice == "6":
+                self.report_faculty_clubs()
+            elif choice == "7":
+                self.report_student_clubs()
+            elif choice == "8":
+                self.report_student_events_on_date()
+            elif choice == "9":
+                return
+            else:
+                print("Invalid option.")
+
+    def main_menu(self):
+        self.setup_database()
+
+        while True:
+            print("\nClub Database")
+            print("1. View one table")
+            print("2. View all tables")
+            print("3. Add row")
+            print("4. Delete row")
+            print("5. Modify row")
+            print("6. Reports")
+            print("7. Exit")
+
+            choice = input("Choose an option: ").strip()
+            if choice == "1":
+                self.view_table()
+            elif choice == "2":
+                self.view_all_tables()
+            elif choice == "3":
+                self.add_row()
+            elif choice == "4":
+                self.delete_row()
+            elif choice == "5":
+                self.modify_row()
+            elif choice == "6":
+                self.reports_menu()
+            elif choice == "7":
+                print("Goodbye.")
+                if self.connection and self.connection.is_connected():
+                    self.connection.close()
+                break
+            else:
+                print("Invalid option.")
 
 
 if __name__ == "__main__":
-    app=App()
-    app.mainloop()
+    app = ClubDatabaseCLI()
+    app.main_menu()
